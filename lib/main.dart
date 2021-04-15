@@ -33,7 +33,7 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   List<Widget> cardList = [];
 
-  List<GlobalKey<FlipCardState>> keyList = [];
+
 
   void removeCards(index) {
     setState(() {
@@ -53,19 +53,36 @@ class HomePageState extends State<HomePage> {
     // TODO: implement build
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Tinder App"),
-        backgroundColor: Colors.purple,
+      body: Center(child: Padding(
+        padding: const EdgeInsets.only(top: 60),
+        child: Stack(
+          alignment: Alignment.center,
+            children: cardList),
       ),
-      body: Center(child: Stack(alignment: Alignment.center, children: cardList)),
+      ),
+      bottomNavigationBar: Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.replay_circle_filled),
+            onPressed: (){
+              _generateCards();
+              setState(() {
+
+              });
+            },
+          )
+        ],
+      ),
     );
   }
   //Draggable
   List<Widget> _generateCards() {
-    List<Color> colorList = [Colors.grey, Colors.black54, Colors.blueGrey];
+    List<GlobalKey<FlipCardState>> keyList = [];
+    List<Color> colorList = [Colors.grey, Colors.deepPurple, Colors.blueGrey, Colors.cyan, Colors.deepOrangeAccent];
+    cardList.clear();
     for (int x = 0; x < 5; x++) {
       int angle = Random().nextInt(5) * (Random().nextBool() ? 1 : -1);
-      Color color = colorList[Random().nextInt(3)];
+      Color color = colorList[x];
       keyList.add(GlobalKey<FlipCardState>());
       cardList.add(
         Draggable(
@@ -97,17 +114,13 @@ class HomePageState extends State<HomePage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
           ),
-          // color: Color.fromARGB(250, 112, 19, 179),
+          color: color,
           child: Stack(
             alignment: Alignment.center,
             children: <Widget>[
-              Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                    color: color
-                ),
-                height: 400.0,
-                width: 300.0,
+              SizedBox(
+                width: 350,
+                height: 500,
               ),
               Positioned(
                 top: 20,
@@ -156,17 +169,13 @@ class HomePageState extends State<HomePage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
           ),
-          // color: Color.fromARGB(250, 112, 19, 179),
+          color: color,
           child: Stack(
             alignment: Alignment.center,
             children: <Widget>[
-              Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                    color: color
-                ),
-                height: 400.0,
-                width: 300.0,
+              SizedBox(
+                width: 350,
+                height: 500,
               ),
               Positioned(
                 top: 20,
