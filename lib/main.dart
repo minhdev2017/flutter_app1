@@ -141,7 +141,7 @@ class HomePageState extends State<HomePage> {
                     onPressed: () {
                       key.currentState.toggleCard();
                     },
-                    child: Text("Flipe to side $side"),
+                    child: Text("Flipe to side ${side == "A" ? "B": "A"}"),
                   ))
             ],
           )),
