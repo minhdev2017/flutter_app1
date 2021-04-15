@@ -62,19 +62,23 @@ class HomePageState extends State<HomePage> {
   }
   //Draggable
   List<Widget> _generateCards() {
-
+    List<Color> colorList = [Colors.grey, Colors.black54, Colors.blueGrey];
     for (int x = 0; x < 5; x++) {
       int angle = Random().nextInt(5) * (Random().nextBool() ? 1 : -1);
+      Color color = colorList[Random().nextInt(3)];
       keyList.add(GlobalKey<FlipCardState>());
       cardList.add(
         Draggable(
           child: FlipCard(
             flipOnTouch: false,
             key: keyList[x],
-            front: _card(Colors.grey, "$x A", angle, keyList[x]),
-            back: _card(Colors.black, "$x B", angle, keyList[x]),
+            onFlipDone: (result){
+              print(result);
+            },
+            front: _card(color,"Card $x", "A", angle, keyList[x]),
+            back: _card(color, "Card $x", "B", angle, keyList[x]),
           ),
-          feedback: _cardDrag(angle),
+          feedback: _cardDrag(color, "Card $x", "A", angle),
           childWhenDragging: Container(),
           onDragEnd: (detail){
             removeCards(x);
@@ -85,7 +89,7 @@ class HomePageState extends State<HomePage> {
     return cardList;
   }
 
-  Widget _card(Color color, String side, int angle, GlobalKey<FlipCardState> key ){
+  Widget _card(Color color, String name, String side, int angle, GlobalKey<FlipCardState> key ){
     return RotationTransition(
       turns: new AlwaysStoppedAnimation(angle / 360),
       child: Card(
@@ -105,13 +109,28 @@ class HomePageState extends State<HomePage> {
                 height: 400.0,
                 width: 300.0,
               ),
+              Positioned(
+                top: 20,
+                child: Container(
+                  padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
+                  child: Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 22.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
               Container(
                 padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
                 child: Text(
                   "SIDE $side",
                   style: TextStyle(
                     fontSize: 20.0,
-                    color: Colors.purple,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
               ),
@@ -129,7 +148,7 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _cardDrag(int angle ){
+  Widget _cardDrag(Color color, String name, String side, int angle,){
     return RotationTransition(
       turns: new AlwaysStoppedAnimation(angle / 360),
       child: Card(
@@ -144,12 +163,43 @@ class HomePageState extends State<HomePage> {
               Container(
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                    color: Colors.black
+                    color: color
                 ),
                 height: 400.0,
                 width: 300.0,
               ),
-
+              Positioned(
+                top: 20,
+                child: Container(
+                  padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
+                  child: Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 22.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
+                child: Text(
+                  "SIDE $side",
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              Positioned(
+                  bottom: 20,
+                  child: RaisedButton(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    onPressed: (){},
+                    child: Text("Flipe to side $side"),
+                  ))
             ],
           )),
     );
