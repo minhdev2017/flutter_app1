@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 void main() {
   runApp(MyApp());
@@ -33,8 +34,11 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   List<Widget> cardList = [];
 
+  final double cardWith = 350;
+  final double cardHeight = 500;
 
-
+  double _dragEndX = 100.0;
+  double _dragEndY = 100.0;
   void removeCards(index) {
     setState(() {
       cardList.removeAt(index);
@@ -97,8 +101,18 @@ class HomePageState extends State<HomePage> {
           ),
           feedback: _cardDrag(color, "Card $x", "A", angle),
           childWhenDragging: Container(),
+          onDragStarted: (){
+
+          },
           onDragEnd: (detail){
-            removeCards(x);
+           if(_dragEndX < 20 || _dragEndX > MediaQuery.of(context).size.width - 20
+           ||_dragEndY < 50 || _dragEndY > MediaQuery.of(context).size.height - 50){
+             removeCards(x);
+           }
+          },
+          onDragUpdate: (detail){
+            _dragEndX = detail.globalPosition.dx;
+            _dragEndY = detail.globalPosition.dy;
           },
         ),
       );
@@ -119,8 +133,8 @@ class HomePageState extends State<HomePage> {
             alignment: Alignment.center,
             children: <Widget>[
               SizedBox(
-                width: 350,
-                height: 500,
+                width: cardWith,
+                height: cardHeight,
               ),
               Positioned(
                 top: 20,
@@ -174,8 +188,8 @@ class HomePageState extends State<HomePage> {
             alignment: Alignment.center,
             children: <Widget>[
               SizedBox(
-                width: 350,
-                height: 500,
+                width: cardWith,
+                height: cardHeight,
               ),
               Positioned(
                 top: 20,
