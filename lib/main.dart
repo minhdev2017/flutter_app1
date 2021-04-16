@@ -59,6 +59,8 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin  {
 
   double _dragEndX = 100.0;
   double _dragEndY = 100.0;
+
+  bool sideA = true;
   void removeCards(card) {
     setState(() {
       datas.remove(card);
@@ -104,6 +106,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin  {
             child: Stack(
                 alignment: Alignment.center,
                 children: datas.map((e){
+                  print("create card");
                   return Draggable(
                     child: Container(
                       child: _isAnimation ? Transform.translate(
@@ -113,7 +116,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin  {
                           flipOnTouch: false,
                           key: e["key"],
                           onFlipDone: (result){
-                            print(result);
+                            sideA = result;
                           },
                           front: _card(e["color"],e["title"], "A", e["angle"], e["key"]),
                           back: _card(e["color"],e["title"], "B", e["angle"], e["key"]),
@@ -122,18 +125,22 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin  {
                         flipOnTouch: false,
                         key: e["key"],
                         onFlipDone: (result){
-                          print(result);
+                          setState(() {
+                            sideA = result;
+                          });
+
                         },
                         front: _card(e["color"],e["title"], "A", e["angle"], e["key"]),
                         back: _card(e["color"],e["title"], "B", e["angle"], e["key"]),
                       ),
                     ),
-                    feedback: _cardDrag(e["color"],e["title"], "A", e["angle"]),
+                    feedback: _cardDrag(e["color"],e["title"], sideA? "A" : "B", e["angle"]),
                     childWhenDragging: Container(),
                     onDragStarted: (){
-
+                      print("onDragStarted");
                     },
                     onDragEnd: (detail){
+                      print("onDragEnd");
                       if(_dragEndX < 20 || _dragEndX > MediaQuery.of(context).size.width - 20
                           ||_dragEndY < 50 || _dragEndY > MediaQuery.of(context).size.height - 50){
                         removeCards(e);
@@ -291,7 +298,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin  {
                   child: RaisedButton(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                     onPressed: (){},
-                    child: Text("Flipe to side $side"),
+                    child: Text("Flipe to side ${side == "A" ? "B": "A"}"),
                   ))
             ],
           )),
