@@ -8,18 +8,35 @@ void main() {
   runApp(MyApp());
 }
 
+
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        routes: <String, WidgetBuilder>{
-          '/cardDetails': (BuildContext context) {
-            // return new CardDetails();
+
+        home: Builder(
+          builder: (context) {
+            return Scaffold(
+              body: Center(
+                child: TextButton(
+                  onPressed: (){
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) => HomePage(),
+                      ),
+                    );
+                  },
+                  child: Text("Click Me"),
+                ),
+              ),
+            );
           }
-        },
-        home: HomePage());
+        )
+    );
   }
 }
 
@@ -31,17 +48,20 @@ class HomePage extends StatefulWidget {
   }
 }
 
-class HomePageState extends State<HomePage> {
-  List<Widget> cardList = [];
+class HomePageState extends State<HomePage> with TickerProviderStateMixin  {
+
+  late AnimationController controller;
+  bool _isAnimation = false;
+  late List<dynamic> datas;
 
   final double cardWith = 350;
   final double cardHeight = 500;
 
   double _dragEndX = 100.0;
   double _dragEndY = 100.0;
-  void removeCards(index) {
+  void removeCards(card) {
     setState(() {
-      cardList.removeAt(index);
+      datas.remove(card);
     });
   }
 
@@ -49,7 +69,24 @@ class HomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    cardList = _generateCards();
+    controller = new AnimationController(
+        duration: Duration(milliseconds: 450), vsync: this)..addStatusListener((status){
+          print("status $status");
+        if(status == AnimationStatus.completed){
+          _isAnimation = false;
+          controller.reverse();
+        }else if(status == AnimationStatus.dismissed){
+          //controller.forward();
+        }
+    });
+    _generateCards();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    controller.dispose();
   }
 
   @override
@@ -57,22 +94,70 @@ class HomePageState extends State<HomePage> {
     // TODO: implement build
 
     return Scaffold(
-      body: Center(child: Padding(
-        padding: const EdgeInsets.only(top: 60),
-        child: Stack(
-          alignment: Alignment.center,
-            children: cardList),
-      ),
+
+      body: AnimatedBuilder(
+        animation: controller,
+        builder: (context, child) {
+          print("AnimatedBuilder $child");
+          return Center(child: Padding(
+            padding: const EdgeInsets.only(top: 60),
+            child: Stack(
+                alignment: Alignment.center,
+                children: datas.map((e){
+                  return Draggable(
+                    child: Container(
+                      child: _isAnimation ? Transform.translate(
+                        offset: Offset(Tween(begin: (e["offset"] as Offset).dx, end: 0.0).animate(controller).value,
+                            Tween(begin: (e["offset"] as Offset).dy, end: 0.0).animate(controller).value),
+                        child: FlipCard(
+                          flipOnTouch: false,
+                          key: e["key"],
+                          onFlipDone: (result){
+                            print(result);
+                          },
+                          front: _card(e["color"],e["title"], "A", e["angle"], e["key"]),
+                          back: _card(e["color"],e["title"], "B", e["angle"], e["key"]),
+                        ),
+                      ) :  FlipCard(
+                        flipOnTouch: false,
+                        key: e["key"],
+                        onFlipDone: (result){
+                          print(result);
+                        },
+                        front: _card(e["color"],e["title"], "A", e["angle"], e["key"]),
+                        back: _card(e["color"],e["title"], "B", e["angle"], e["key"]),
+                      ),
+                    ),
+                    feedback: _cardDrag(e["color"],e["title"], "A", e["angle"]),
+                    childWhenDragging: Container(),
+                    onDragStarted: (){
+
+                    },
+                    onDragEnd: (detail){
+                      if(_dragEndX < 20 || _dragEndX > MediaQuery.of(context).size.width - 20
+                          ||_dragEndY < 50 || _dragEndY > MediaQuery.of(context).size.height - 50){
+                        removeCards(e);
+                      }
+                    },
+                    onDragUpdate: (detail){
+                      _dragEndX = detail.globalPosition.dx;
+                      _dragEndY = detail.globalPosition.dy;
+                    },
+                  );
+                }).toList()),
+          ),
+          );
+        },
       ),
       bottomNavigationBar: Row(
         children: [
           IconButton(
             icon: Icon(Icons.replay_circle_filled),
             onPressed: (){
+              //_generateCards(hasAnimation: true);
+              _isAnimation = true;
               _generateCards();
-              setState(() {
-
-              });
+              controller.forward();
             },
           )
         ],
@@ -80,44 +165,29 @@ class HomePageState extends State<HomePage> {
     );
   }
   //Draggable
-  List<Widget> _generateCards() {
+  _generateCards({bool hasAnimation = true}) {
+    datas = [];
     List<GlobalKey<FlipCardState>> keyList = [];
     List<Color> colorList = [Colors.grey, Colors.deepPurple, Colors.blueGrey, Colors.cyan, Colors.deepOrangeAccent];
-    cardList.clear();
+    List<Offset> postions = [Offset(-300, 0), Offset(-300, -100), Offset(500, 0), Offset(-500, -100), Offset(500, 400)];
     for (int x = 0; x < 5; x++) {
       int angle = Random().nextInt(5) * (Random().nextBool() ? 1 : -1);
+      if (x == 4) {
+        angle = 0;
+      }
       Color color = colorList[x];
       keyList.add(GlobalKey<FlipCardState>());
-      cardList.add(
-        Draggable(
-          child: FlipCard(
-            flipOnTouch: false,
-            key: keyList[x],
-            onFlipDone: (result){
-              print(result);
-            },
-            front: _card(color,"Card $x", "A", angle, keyList[x]),
-            back: _card(color, "Card $x", "B", angle, keyList[x]),
-          ),
-          feedback: _cardDrag(color, "Card $x", "A", angle),
-          childWhenDragging: Container(),
-          onDragStarted: (){
-
-          },
-          onDragEnd: (detail){
-           if(_dragEndX < 20 || _dragEndX > MediaQuery.of(context).size.width - 20
-           ||_dragEndY < 50 || _dragEndY > MediaQuery.of(context).size.height - 50){
-             removeCards(x);
-           }
-          },
-          onDragUpdate: (detail){
-            _dragEndX = detail.globalPosition.dx;
-            _dragEndY = detail.globalPosition.dy;
-          },
-        ),
+      datas.add(
+          {
+            "color": color,
+            "angle": angle,
+            "key": GlobalKey<FlipCardState>(),
+            "title": "Card $x",
+            "offset" : postions[x]
+          }
       );
     }
-    return cardList;
+
   }
 
   Widget _card(Color color, String name, String side, int angle, GlobalKey<FlipCardState> key ){
@@ -166,7 +236,7 @@ class HomePageState extends State<HomePage> {
                   child: RaisedButton(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                     onPressed: () {
-                      key.currentState.toggleCard();
+                      key.currentState?.toggleCard();
                     },
                     child: Text("Flipe to side ${side == "A" ? "B": "A"}"),
                   ))
